@@ -1,0 +1,406 @@
+
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[brazil]{babel}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage[a4paper,top=2cm]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{listings}
+\usepackage{xcolor} 
+\usepackage{enumitem}
+\usepackage{csquotes}
+\usepackage[backend=biber,style=authoryear]{biblatex}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{booktabs} 
+\usepackage{siunitx}  
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+
+
+\lstdefinelanguage{Rust}{
+  sensitive=true,
+  morekeywords={fn, let, mut, if, else, while, loop, for, in, match, return, impl, struct, enum, pub, use, mod, crate, super, self, Self, type, where, trait, true, false},
+  keywordstyle=\color{violet}\bfseries,
+  morekeywords=[2]{String, Vec, Option, Result, Box, u8, u32, i32, f64, usize, bool, str},
+  keywordstyle=[2]\color{blue}\bfseries,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{teal},
+  morestring=[b]",
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  showstringspaces=false,
+  frame=single, 
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  tabsize=4,
+  inputencoding=utf8,
+  extendedchars=true,
+  literate=
+  {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+  {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+  {à}{{\`a}}1 {è}{{\`e}}1 {ì}{{\`i}}1 {ò}{{\`o}}1 {ù}{{\`u}}1
+  {À}{{\`A}}1 {È}{{\'E}}1 {Ì}{{\`I}}1 {Ò}{{\`O}}1 {Ù}{{\`U}}1
+  {ä}{{\"a}}1 {ë}{{\"e}}1 {ï}{{\"i}}1 {ö}{{\"o}}1 {ü}{{\"u}}1
+  {Ä}{{\"A}}1 {Ë}{{\"E}}1 {Ï}{{\"I}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+  {â}{{\^a}}1 {ê}{{\^e}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1
+  {Â}{{\^A}}1 {Ê}{{\^E}}1 {Î}{{\^I}}1 {Ô}{{\^O}}1 {Û}{{\^U}}1
+  {ã}{{\~a}}1 {ẽ}{{\~e}}1 {ĩ}{{\~i}}1 {õ}{{\~o}}1 {ũ}{{\~u}}1
+  {Ã}{{\~A}}1 {Ẽ}{{\~E}}1 {Ĩ}{{\~I}}1 {Õ}{{\~O}}1 {Ũ}{{\~U}}1
+  {œ}{{\oe}}1 {Œ}{{\OE}}1 {æ}{{\ae}}1 {Æ}{{\AE}}1 {ß}{{\ss}}1
+  {ű}{{\H{u}}}1 {Ű}{{\H{U}}}1 {ő}{{\H{o}}}1 {Ő}{{\H{O}}}1
+  {ç}{{\c c}}1 {Ç}{{\c C}}1 {ø}{{\o}}1 {å}{{\r a}}1 {Å}{{\r A}}1
+  {€}{{\euro}}1 {£}{{\pounds}}1 {«}{{\guillemotleft}}1
+  {»}{{\guillemotright}}1 {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {¿}{{?`}}1
+}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    stringstyle=\color{red},
+    commentstyle=\color{gray},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    breaklines=true,
+    tabsize=4,
+    showstringspaces=false,
+}
+
+
+\title{Atividade prática 3}
+
+\author{Raoni Silva}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\noindent Turma de Estruturas Algébricas 25T56 \\ Unidade 3
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Estruturas Fundamentais e Morfismos}
+
+Esta seção aborda a definição programática de par ordenado (produto) e união disjunta (coproduto), bem como os morfismos básicos entre essas estruturas.
+
+\subsection{Definição e morfismo de produto}
+
+Para definir o produto em teoria das categorias, é necessário definir a tupla, para quaisquer objetos A, B de uma categoria, uma tupla ($A \times B$, $\pi_A$, $\pi_B$). Onde  
+$\pi_A$ e $\pi_B$ tem a seguinte assinatura:
+
+$$\pi_A:  \mathrm{Pair}\langle A, B\rangle \to A $$
+$$\pi_B:  \mathrm{Pair}\langle A, B\rangle \to B $$
+
+Dessa forma, é necessário definir o objeto que será o produto, junto de suas projeções esquerdas e direitas.
+
+\begin{lstlisting}[caption={Definição de produto}]
+pub struct Pair<A, B> {
+    first: A,
+    second: B,
+}
+
+impl<A: Clone, B: Clone> Pair<A, B> {
+    pub fn left(&self) -> A {
+        self.left.clone()
+    }
+
+    pub fn right(&self) -> B {
+        self.right.clone()
+    }
+}
+\end{lstlisting}
+
+Onde, \textit{Pair} é o objeto produto ($A \times B$), e os métodos \textit{left} e \textit{right} são as projeções $\pi_A$ e $\pi_B$. 
+
+A partir disso, podemos inferir que o morfismo entre dois pares haverá a seguinte assinatura:
+
+$$m:  A \times B \to C \times D $$
+
+Como existem diversos possíveis morfismos, eu criei uma interface que define um morfismo entre pares, da forma mais natural:
+
+\begin{lstlisting}[caption={Morfismo de produto}]
+pub trait PairMorfism<A, B, C, D> {
+    fn apply(a: Pair<A, B>) -> Pair<C, D>;
+}
+\end{lstlisting}
+
+Para definir um morfismo com esse approach, o ideal é criar tipos unitários customizados que implementem o PairMorfism. Um exemplo a seguir do morfismo
+revert. Ele é o morfismo que transforma um par $A \times B$ em um par $B \times A$.
+
+\begin{lstlisting}[caption={Morfismo revert}]
+pub struct Revert;
+
+impl<A: Clone, B: Clone> PairMorfism<A, B, B, A> for Revert {
+    fn apply(a: Pair<A, B>) -> Pair<B, A> {
+        let r = a.right;
+        let l = a.left;
+
+        Pair::new(r, l)
+    }
+}
+\end{lstlisting}
+
+\subsection{Definição e morfismo de coproduto}
+
+De forma dual ao produto, o coproduto é uma tripla que guarda 3 coisas, mas diferentes: $(A + B, \iota_A, \iota_B)$. Onde  
+
+$$ \iota_A : A \to A + B$$
+$$ \iota_B : B \to A + B$$
+
+Em termos de implementação, a estrutura que melhor representa uma união disjunta é uma enumeração (Sum Type). Definimos o tipo \textit{Sum} e seus construtores, que atuam como as injeções.
+
+\begin{lstlisting}[caption={Definição de co-produto}]
+pub enum Sum<A, B> {
+    Left(A),
+    Right(B),
+}
+
+impl<A, B> Sum<A, B> {
+    pub fn left(a: A) -> Self {
+        Self::Left(a)
+    }
+
+    pub fn right(b: B) -> Self {
+        Self::Right(b)
+    }
+}
+\end{lstlisting}
+
+Onde o \textit{enum Sum} representa o objeto $A + B$, e os construtores estáticos \textit{left} e \textit{right} representam as injeções $\iota_A$ e $\iota_B$, respectivamente.
+
+Seguindo a mesma lógica dos produtos, o morfismo entre dois co-produtos terá a seguinte assinatura:
+
+\[ m : A + B \to C + D \]
+
+Para representar essa transformação, definimos uma interface de morfismo de soma. Diferente do produto, onde acessamos as projeções, no co-produto precisamos tratar as possibilidades de entrada usando \textit{pattern matching}.
+
+\begin{lstlisting}[caption={Morfismo de co-produto}]
+pub trait SumMorfism<A, B, C, D> {
+    fn apply(e: Either<A, B>) -> Either<C, D>;
+}
+\end{lstlisting}
+
+Como exemplo concreto de morfismo, implementamos o \textit{Swap} (comutatividade), que é o dual do morfismo \textit{Revert} apresentado anteriormente. Ele transforma um co-produto $A + B$ em $B + A$, trocando a "direção" da injeção: se o valor veio de $A$ (Left), ele é injetado em $B$ (Right) no destino, e vice-versa.
+
+\begin{lstlisting}[caption={Morfismo Swap (Comutatividade)}]
+pub struct Swap;
+
+impl<A, B> SumMorfism<A, B, B, A> for Swap {
+    fn apply(s: Sum<A, B>) -> Sum<B, A> {
+        match s {
+            Sum::Left(l) => Sum::Right(l),
+            Sum::Right(r) => Sum::Left(r),
+        }
+    }
+}
+\end{lstlisting}
+
+\section{Derivação de produtos}
+
+Para essa parte, fiquei pensando bastante em como implementar isso da melhor forma, a partir do enunciado da questão, deu-se a entender que no fim das contas, eu preciso
+criar uma função que dado um objeto O, ele retorna um produto a partir do O. A assinatura seria algo nesse sentido:
+
+$$ derive Product: O \to A \times B $$
+
+Lembrando que A e B podem ser também, produtos por si só. A partir dessa lógica, imagino que criar uma função que recebe qualquer objeto que saiba "se decompor em produtos"
+seja uma necessidade, ou seja, criar uma função que recebe qualquer cara que implemente uma interface \textit{DeriveProduct}. Com isso, como ela sabe se decompor, eu posso
+retornar uma tupla a partir de qualquer um objeto desses. A nível de código, segue a implementação:
+
+
+\begin{lstlisting}[caption={Derivação do produto}]
+pub trait DeriveProduct {
+    type Left;
+    type Right;
+
+    fn derive(s: Self) -> (Self::Left, Self::Right);
+}
+\end{lstlisting}
+
+Perceba que a interface tem seus tipos associados que definem o tipo de sua projeção esquerda e direita, assegurando o tipo do retorno do método \textit{derive}. Segue um exemplo de implementação não trivial para o tipo \textit{User}, que tem três campos, já pra exemplificar a extensão do produto para as triplas, sendo facilmente extensível para o ênuplo.
+
+
+\begin{lstlisting}[caption={Exemplo de derivação}]
+struct Id(i32);
+struct Email(String);
+struct Name(String);
+
+struct User {
+    id: Id,
+    name: Name,
+    email: Email,
+}
+
+impl DeriveProduct for User {
+    type Left = (Id, Name);
+    type Right = Email;
+    fn derive(s: Self) -> (Self::Left, Self::Right) {
+        ((s.id, s.name), s.email)
+    }
+}
+\end{lstlisting}
+
+
+Nessa implementação a função \textit{derive} é de fato a implementação da função que deriva produtos automaticamente, para cada tipo que a implementa. 
+
+Para utilizar a função derive, basta chamar o método associado ao tipo da seguinte forma:
+
+\begin{lstlisting}[caption={Utilização da derivação}]
+let u = User {
+    id: Id(10),
+    name: Name("Valdisgleis".to_string()),
+    email: Email("valdisgleis@gmail.com".to_string()),
+};
+
+let ((id, nome), email) = User::derive(u);
+\end{lstlisting}
+
+
+\section{Derivação de Coprodutos}
+
+
+De forma dual à derivação de produtos, a derivação de coprodutos é definida por meio de uma interface (trait). Embora a estrutura dos tipos associados permaneça
+similar, a assinatura da função \texttt{derive} reflete a natureza de injeção da soma: ela consome o próprio objeto e retorna uma estrutura de soma genérica
+(\texttt{Sum}).
+
+
+\begin{lstlisting}[caption={Interface para derivação de coproduto}]
+pub trait DeriveSum {
+    type Left;
+    type Right;
+
+    fn derive(s: Self) -> Sum<Self::Left, Self::Right>;
+}
+\end{lstlisting}
+
+Para atender ao requisito de derivar coprodutos a partir de $N$ objetos, utilizamos a propriedade associativa da soma. Computacionalmente, representamos isso
+através do aninhamento de tipos \texttt{Sum}. Dessa forma, a função \texttt{derive} é responsável por transformar uma estrutura de escolha com $N$ variantes
+em uma estrutura "canônica" de somas binárias aninhadas (uma árvore de tipos).
+
+No exemplo a seguir, o \texttt{enum} do Rust atua como o recipiente natural para esses $N$ objetos. A implementação da trait mapeia cada variante concreta
+desse enum para a posição correspondente na estrutura genérica de coproduto.
+
+
+\begin{lstlisting}[caption={Implementação para 3 objetos (N=3)}]
+struct Id(i32);
+struct Email(String);
+struct Name(String);
+
+enum UserIdentifier {
+    Id(Id),
+    Name(Name),
+    Email(Email),
+}
+
+impl DeriveSum for UserIdentifier {
+    type Left = Sum<Id, Name>;
+    type Right = Email;
+
+    fn derive(s: Self) -> Sum<Self::Left, Self::Right> {
+        match s {
+            Self::Id(id) => Sum::Left(Sum::Left(id)),
+            Self::Name(name) => Sum::Left(Sum::Right(name)),
+            Self::Email(email) => Sum::Right(email),
+        }
+    }
+}
+\end{lstlisting}
+
+A utilização se dá pela chamada direta da função, que converte o tipo concreto na sua representação categórica genérica:
+
+\begin{lstlisting}[caption={Implementando o DeriveSum}]
+let email = Email("valdisgleis@gmail.com".to_string());
+let user = UserIdentifier::Email(email);
+
+let x = UserIdentifier::derive(user);
+
+assert_eq!(x, Sum::Right(email));
+\end{lstlisting}
+
+
+\section{Morfismos entre Produtos}
+
+A questão 4 pede, em suma, uma função com a seguinte assinatura:
+
+$$ traducao: (t_1 : (A \times B) , t_2: (C \times D) , \mathrm{m}:  (A \times B \to C \times D)) \to C \times D $$
+
+O objetivo da função é atuar como uma validação computacional do diagrama do produto. Ela aplica o morfismo m
+em $t_1$ e verifica se o resultado é consistente com $t_2$ ao analisar suas projeções. Se as projeções resultantes de $m(t_1)$ forem idênticas às projeções de $t_2$,
+a função retorna o par validado; caso contrário, retorna \texttt{None}, indicando uma falha na comutatividade ou na expectativa do testemunho.
+
+A implementação em Rust reflete essa lógica, utilizando o tipo \texttt{Option} para representar a possibilidade de falha na validação. A assinatura da função foi simplificada para melhorar o entendimento:
+
+\begin{lstlisting}[caption={Função de tradução/teste}]
+fn traducao(t1: (A, B), t2: (C, D), f: F) -> Option<(C, D)>
+where
+    F: Fn((A, B)) -> (C, D),
+{
+    let (c2, d2) = f(t1);
+
+    if c2 != t2.0 {
+        return None;
+    }
+
+    if d2 != t2.1 {
+        return None;
+    }
+
+    Some((c2, d2))
+}
+\end{lstlisting}
+
+
+
+\section{Gerenciamento de Efeitos Colaterais}
+
+A Questão 5 propõe um cenário onde a transformação na primeira coordenada envolve uma função \textit{random}. Na Teoria das Categorias, os morfismos devem satisfazer a transparência referencial: para uma mesma entrada, deve-se obter sempre a mesma saída.
+
+Para utilizar a biblioteca padrão \texttt{rand} do Rust sem violar esse princípio, não podemos utilizar o gerador global (que depende de entropia do sistema operacional ou relógio). Devemos utilizar um Gerador de Números Pseudo-Aleatórios (PRNG) deterministicamente inicializado com o valor da entrada.
+
+Abaixo, utilizamos o \texttt{StdRng} e a trait \texttt{SeedableRng}. Ao semear o gerador com o valor da coordenada inteira do par, garantimos que a "aleatoriedade"
+seja uma função pura do argumento.
+
+
+\begin{lstlisting}[caption={Morfismo com rand determinístico}]
+use rand::{Rng, SeedableRng, rngs::StdRng};
+
+use super::*;
+
+fn pure_random(seed: i32) -> i32 {
+    let mut rng = StdRng::seed_from_u64(seed as u64);
+
+    rng.random()
+}
+
+fn identidade(c: char) -> char {
+    c
+}
+
+#[test]
+fn teste_morfismo_com_seed() {
+    let t1: (i32, char) = (42, 'z');
+
+    let morfismo = |(n, c): (i32, char)| -> (i32, char) { (pure_random(n), identidade(c)) };
+
+    let valor_esperado = pure_random(42);
+    let t2: (i32, char) = (valor_esperado, 'z');
+
+    let resultado = traducao(t1, t2, morfismo);
+
+    assert_eq!(resultado, Some(t2));
+    assert_eq!(morfismo((42, 'z')), t2);
+}
+\end{lstlisting}
+
+
+
+\end{document}
