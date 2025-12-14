@@ -91,17 +91,20 @@
 
 \section{Estruturas Fundamentais e Morfismos}
 
-Esta seção aborda a definição programática de par ordenado (produto) e união disjunta (coproduto), bem como os morfismos básicos entre essas estruturas.
+Esta seção aborda a definição programática de par ordenado (produto) e união disjunta (coproduto), bem como os morfismos básicos entre essas estruturas, para responder a questão 1 da atividade proposta.
 
 \subsection{Definição e morfismo de produto}
 
-Para definir o produto em teoria das categorias, é necessário definir a tupla, para quaisquer objetos A, B de uma categoria, uma tupla ($A \times B$, $\pi_A$, $\pi_B$). Onde  
-$\pi_A$ e $\pi_B$ tem a seguinte assinatura:
+Para definir o produto em teoria das categorias, é necessário definir, para quaisquer objetos A, B de uma categoria, seguinte tripla:
 
-$$\pi_A:  \mathrm{Pair}\langle A, B\rangle \to A $$
-$$\pi_B:  \mathrm{Pair}\langle A, B\rangle \to B $$
+$$(A \times B, \pi_A, \pi_B)$$
 
-Dessa forma, é necessário definir o objeto que será o produto, junto de suas projeções esquerdas e direitas.
+Onde $\pi_A$ e $\pi_B$ tem a seguinte assinatura:
+
+$$\pi_A: A \times B \to A $$
+$$\pi_B: A \times B \to B $$
+
+Dessa forma, é necessário definir o objeto que será o produto, junto de suas projeções esquerdas e direitas. Em Rust, a implementação foi a seguinte:
 
 \begin{lstlisting}[caption={Definição de produto}]
 pub struct Pair<A, B> {
@@ -134,8 +137,7 @@ pub trait PairMorfism<A, B, C, D> {
 }
 \end{lstlisting}
 
-Para definir um morfismo com esse approach, o ideal é criar tipos unitários customizados que implementem o PairMorfism. Um exemplo a seguir do morfismo
-revert. Ele é o morfismo que transforma um par $A \times B$ em um par $B \times A$.
+Sob essa modelagem, a definição de morfismos concretos é realizada através de tipos unitários que implementam a interface (trait). Um exemplo clássico é o morfismo de \textit{swap} (ou reversão), que transforma um produto A×B no produto comutado B×A.
 
 \begin{lstlisting}[caption={Morfismo revert}]
 pub struct Revert;
@@ -152,10 +154,17 @@ impl<A: Clone, B: Clone> PairMorfism<A, B, B, A> for Revert {
 
 \subsection{Definição e morfismo de coproduto}
 
-De forma dual ao produto, o coproduto é uma tripla que guarda 3 coisas, mas diferentes: $(A + B, \iota_A, \iota_B)$. Onde  
+De forma dual ao produto, o coproduto é uma tripla que guarda 3 outras coisas:
+
+$$(A + B, \iota_A, \iota_B)$$
+
+Onde, 
 
 $$ \iota_A : A \to A + B$$
 $$ \iota_B : B \to A + B$$
+
+Ou seja, agora em a partir de A e de B eu tenho que conseguir construir/injetar o coproduto A + B, para quem é familiar com java, é como se tivessemos dois construtores, um que recebe um
+objeto do tipo A, e outro que recebe um objeto do tipo B.
 
 Em termos de implementação, a estrutura que melhor representa uma união disjunta é uma enumeração (Sum Type). Definimos o tipo \textit{Sum} e seus construtores, que atuam como as injeções.
 
@@ -182,11 +191,11 @@ Seguindo a mesma lógica dos produtos, o morfismo entre dois co-produtos terá a
 
 \[ m : A + B \to C + D \]
 
-Para representar essa transformação, definimos uma interface de morfismo de soma. Diferente do produto, onde acessamos as projeções, no co-produto precisamos tratar as possibilidades de entrada usando \textit{pattern matching}.
+Para representar essa transformação, definimos uma interface de morfismo de soma. Diferente do produto, onde acessamos as projeções, no coproduto precisamos tratar as possibilidades de entrada usando \textit{pattern matching}.
 
-\begin{lstlisting}[caption={Morfismo de co-produto}]
+\begin{lstlisting}[caption={Morfismo de coproduto}]
 pub trait SumMorfism<A, B, C, D> {
-    fn apply(e: Either<A, B>) -> Either<C, D>;
+    fn apply(e: Sum<A, B>) -> Sum<C, D>;
 }
 \end{lstlisting}
 
@@ -214,7 +223,7 @@ $$ derive Product: O \to A \times B $$
 
 Lembrando que A e B podem ser também, produtos por si só. A partir dessa lógica, imagino que criar uma função que recebe qualquer objeto que saiba "se decompor em produtos"
 seja uma necessidade, ou seja, criar uma função que recebe qualquer cara que implemente uma interface \textit{DeriveProduct}. Com isso, como ela sabe se decompor, eu posso
-retornar uma tupla a partir de qualquer um objeto desses. A nível de código, segue a implementação:
+retornar uma tupla a partir de qualquer um objeto desses. A nível de código, segue o contrato definido pela interface:
 
 
 \begin{lstlisting}[caption={Derivação do produto}]
@@ -226,7 +235,7 @@ pub trait DeriveProduct {
 }
 \end{lstlisting}
 
-Perceba que a interface tem seus tipos associados que definem o tipo de sua projeção esquerda e direita, assegurando o tipo do retorno do método \textit{derive}. Segue um exemplo de implementação não trivial para o tipo \textit{User}, que tem três campos, já pra exemplificar a extensão do produto para as triplas, sendo facilmente extensível para o ênuplo.
+Perceba que a interface tem seus tipos associados que definem o tipo de sua projeção esquerda e direita, assegurando o tipo do retorno do método \textit{derive}. Segue um exemplo de implementação não trivial para o tipo \textit{User}, que tem três campos, já pra exemplificar a extensão do produto para as triplas, sendo facilmente extensível para qualquer ênuplo.
 
 
 \begin{lstlisting}[caption={Exemplo de derivação}]
@@ -249,7 +258,6 @@ impl DeriveProduct for User {
 }
 \end{lstlisting}
 
-
 Nessa implementação a função \textit{derive} é de fato a implementação da função que deriva produtos automaticamente, para cada tipo que a implementa. 
 
 Para utilizar a função derive, basta chamar o método associado ao tipo da seguinte forma:
@@ -264,6 +272,8 @@ let u = User {
 let ((id, nome), email) = User::derive(u);
 \end{lstlisting}
 
+Perceba que aqui, devido a implementação de \textit{DeriveProduct} para User retorna uma tupla, onde a projeção esquerda também é uma tupla, nós conseguimos
+guardar todas as informações do usuário, decomposto em "produtos puros", que definimos.
 
 \section{Derivação de Coprodutos}
 
