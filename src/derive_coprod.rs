@@ -23,6 +23,7 @@ mod test {
         #[derive(Debug, PartialEq)]
         struct Name(String);
 
+        #[allow(unused)]
         enum UserIdentifier {
             Id(Id),
             Name(Name),

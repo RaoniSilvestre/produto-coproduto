@@ -21,20 +21,20 @@ pub trait PairMorfism<A, B, C, D> {
     fn apply(a: Pair<A, B>) -> Pair<C, D>;
 }
 
-pub struct Revert;
-
-impl<A: Clone, B: Clone> PairMorfism<A, B, B, A> for Revert {
-    fn apply(a: Pair<A, B>) -> Pair<B, A> {
-        let r = a.right;
-        let l = a.left;
-
-        Pair::new(r, l)
-    }
-}
-
 #[cfg(test)]
 mod ordered_pair_tests {
-    use crate::prod::{Pair, PairMorfism, Revert};
+    pub struct Revert;
+
+    impl<A: Clone, B: Clone> PairMorfism<A, B, B, A> for Revert {
+        fn apply(a: Pair<A, B>) -> Pair<B, A> {
+            let r = a.right;
+            let l = a.left;
+
+            Pair::new(r, l)
+        }
+    }
+
+    use crate::prod::{Pair, PairMorfism};
 
     #[test]
     fn create_pair() {

@@ -26,13 +26,29 @@ pub trait SumMorfism<
     fn apply(s: Sum<A, B>) -> Sum<C, D>;
 }
 
-pub struct Swap;
+#[cfg(test)]
+mod coprod_tests {
+    use std::fmt::Debug;
 
-impl<A: Debug + PartialEq, B: Debug + PartialEq> SumMorfism<A, B, B, A> for Swap {
-    fn apply(s: Sum<A, B>) -> Sum<B, A> {
-        match s {
-            Sum::Left(l) => Sum::Right(l),
-            Sum::Right(r) => Sum::Left(r),
+    use crate::coprod::{Sum, SumMorfism};
+
+    pub struct Swap;
+
+    impl<A: Debug + PartialEq, B: Debug + PartialEq> SumMorfism<A, B, B, A> for Swap {
+        fn apply(s: Sum<A, B>) -> Sum<B, A> {
+            match s {
+                Sum::Left(l) => Sum::Right(l),
+                Sum::Right(r) => Sum::Left(r),
+            }
         }
+    }
+
+    #[test]
+    fn test_swap_left_to_right() {
+        let input: Sum<i32, &str> = Sum::Left(10);
+
+        let result = Swap::apply(input);
+
+        assert_eq!(result, Sum::Right(10));
     }
 }
